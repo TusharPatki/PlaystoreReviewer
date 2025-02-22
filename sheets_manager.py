@@ -1,4 +1,4 @@
-from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import pandas as pd
@@ -24,13 +24,13 @@ class SheetsManager:
                 # Remove any whitespace and ensure we have a clean JSON string
                 creds_json = creds_json.strip()
 
-                # Parse credentials JSON with strict parsing
+                # Parse credentials JSON
                 creds_dict = json.loads(creds_json)
 
                 # Log credential structure (without sensitive data)
                 self.logger.info("Credential keys found: " + ", ".join(creds_dict.keys()))
 
-                # Create credentials object
+                # Create credentials object using the correct method
                 creds = Credentials.from_service_account_info(
                     creds_dict,
                     scopes=['https://www.googleapis.com/auth/spreadsheets']
