@@ -27,10 +27,30 @@ class SheetsManager:
                 # Parse credentials JSON
                 creds_dict = json.loads(creds_json)
 
-                # Log credential structure (without sensitive data)
-                self.logger.info("Credential keys found: " + ", ".join(creds_dict.keys()))
+                # Check if these are web OAuth credentials
+                if 'web' in creds_dict:
+                    raise ValueError(
+                        "OAuth 2.0 client credentials provided instead of service account credentials. "
+                        "Please provide a service account JSON key that starts with {\"type\": \"service_account\"}"
+                    )
 
-                # Create credentials object using the correct method
+                # Validate required fields for service account
+                required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 
+                                 'client_email', 'client_id', 'auth_uri', 'token_uri']
+                missing_fields = [field for field in required_fields if field not in creds_dict]
+
+                if missing_fields:
+                    self.logger.error(f"Missing required fields in credentials: {', '.join(missing_fields)}")
+                    raise ValueError(f"Service account info was not in the expected format, missing fields: {', '.join(missing_fields)}")
+
+                # Verify this is a service account
+                if creds_dict.get('type') != 'service_account':
+                    raise ValueError("Invalid credentials type. Expected 'service_account'")
+
+                # Log credential structure (without sensitive data)
+                self.logger.info(f"Found credentials for service account: {creds_dict.get('client_email', 'unknown')}")
+
+                # Create credentials object
                 creds = Credentials.from_service_account_info(
                     creds_dict,
                     scopes=['https://www.googleapis.com/auth/spreadsheets']
