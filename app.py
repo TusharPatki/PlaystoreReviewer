@@ -4,7 +4,7 @@ from datetime import datetime
 from scheduler import ReviewScheduler
 from review_scraper import PlayStoreReviewer
 from sheets_manager import SheetsManager
-from config import PACKAGE_NAME, SPREADSHEET_ID, CREDENTIALS_FILE
+from config import PACKAGE_NAME, SPREADSHEET_ID
 
 def main():
     st.set_page_config(
@@ -61,7 +61,6 @@ def main():
     st.code(f"""
     Package Name: {PACKAGE_NAME}
     Google Sheet ID: {SPREADSHEET_ID}
-    Credentials File: {CREDENTIALS_FILE}
     """)
 
 if __name__ == "__main__":
