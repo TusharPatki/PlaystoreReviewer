@@ -68,10 +68,33 @@ class SheetsManager:
             self.logger.error(f"Error initializing Sheets service: {str(e)}")
             raise
 
+    def check_permissions(self, service):
+        """Verify permissions on the spreadsheet"""
+        try:
+            # Try to read spreadsheet metadata
+            service.spreadsheets().get(spreadsheetId=self.spreadsheet_id).execute()
+            self.logger.info("Successfully verified spreadsheet permissions")
+            return True
+        except HttpError as e:
+            if e.resp.status == 403:
+                service_account = e._get_reason().split(":")[-1].strip()
+                raise ValueError(
+                    f"Permission denied. Please share the Google Sheet with the service account email: {service_account} "
+                    "and grant it 'Editor' access."
+                )
+            elif e.resp.status == 404:
+                raise ValueError(
+                    f"Spreadsheet not found. Please verify the spreadsheet ID: {self.spreadsheet_id}"
+                )
+            raise
+
     def update_sheet(self, df):
         """Update Google Sheet with new reviews"""
         try:
             service = self.get_service()
+
+            # Verify permissions first
+            self.check_permissions(service)
 
             # Convert DataFrame to values
             values = [df.columns.values.tolist()] + df.values.tolist()
