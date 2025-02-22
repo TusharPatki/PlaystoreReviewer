@@ -9,25 +9,44 @@ class PlayStoreReviewer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
 
-    def fetch_reviews(self, count=100):
-        """Fetch reviews from Google Play Store"""
+    def fetch_reviews(self, count=None):
+        """Fetch all reviews from Google Play Store"""
         try:
-            self.logger.info(f"Fetching {count} reviews for package: {self.package_name}")
+            self.logger.info(f"Fetching reviews for package: {self.package_name}")
+            all_reviews = []
+            continuation_token = None
+            batch_size = 100  # Fetch in batches of 100
 
-            result, continuation_token = reviews(
-                self.package_name,
-                lang='en',
-                country='us',
-                sort=Sort.NEWEST,
-                count=count
-            )
+            while True:
+                result, continuation_token = reviews(
+                    self.package_name,
+                    lang='en',
+                    country='us',
+                    sort=Sort.NEWEST,
+                    count=batch_size,
+                    continuation_token=continuation_token
+                )
 
-            if not result:
+                if not result:
+                    break
+
+                all_reviews.extend(result)
+                self.logger.info(f"Fetched {len(result)} reviews. Total so far: {len(all_reviews)}")
+
+                # If we have a count limit or no more reviews
+                if count and len(all_reviews) >= count:
+                    all_reviews = all_reviews[:count]
+                    break
+
+                if not continuation_token:
+                    break
+
+            if not all_reviews:
                 self.logger.warning(f"No reviews found for package: {self.package_name}")
                 return pd.DataFrame()
 
             # Convert to DataFrame
-            df = pd.DataFrame(result)
+            df = pd.DataFrame(all_reviews)
 
             # Add timestamp
             df['scrape_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -39,7 +58,7 @@ class PlayStoreReviewer:
                 'scrape_timestamp'
             ]]
 
-            self.logger.info(f"Successfully fetched {len(df)} reviews")
+            self.logger.info(f"Successfully fetched total of {len(df)} reviews")
             return df
 
         except Exception as e:

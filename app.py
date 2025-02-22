@@ -36,7 +36,7 @@ def main():
 
     with col3:
         if st.button("Run Now"):
-            with st.spinner("Fetching reviews..."):
+            with st.spinner("Fetching all reviews (this may take a while)..."):
                 st.session_state.scheduler.job()
                 st.success("Job completed!")
 
@@ -48,6 +48,7 @@ def main():
     st.header("Latest Reviews Preview")
     try:
         reviewer = PlayStoreReviewer(PACKAGE_NAME)
+        # Only fetch 5 reviews for preview
         df = reviewer.fetch_reviews(count=5)
         if not df.empty:
             st.dataframe(df)
