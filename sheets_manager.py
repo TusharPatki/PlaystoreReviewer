@@ -97,6 +97,15 @@ class SheetsManager:
             self.check_permissions(service)
 
             # Convert DataFrame to values
+            # Convert timestamps to strings before sending to Google Sheets
+            df = df.copy()
+            for col in df.columns:
+                if df[col].dtype == 'datetime64[ns]':
+                    df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+                elif hasattr(df[col].dtype, 'name') and df[col].dtype.name == 'Timestamp':
+                    df[col] = df[col].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S') if pd.notnull(x) else '')
+
+            # Convert DataFrame to values
             values = [df.columns.values.tolist()] + df.values.tolist()
 
             body = {
