@@ -12,6 +12,8 @@ class PlayStoreReviewer:
     def fetch_reviews(self, count=100):
         """Fetch reviews from Google Play Store"""
         try:
+            self.logger.info(f"Fetching {count} reviews for package: {self.package_name}")
+
             result, continuation_token = reviews(
                 self.package_name,
                 lang='en',
@@ -19,24 +21,25 @@ class PlayStoreReviewer:
                 sort=Sort.NEWEST,
                 count=count
             )
-            
+
             if not result:
-                self.logger.warning("No reviews found")
+                self.logger.warning(f"No reviews found for package: {self.package_name}")
                 return pd.DataFrame()
 
             # Convert to DataFrame
             df = pd.DataFrame(result)
-            
+
             # Add timestamp
             df['scrape_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            
+
             # Select and rename columns
             df = df[[
                 'reviewId', 'content', 'score', 'thumbsUpCount',
                 'reviewCreatedVersion', 'at', 'repliedAt',
                 'scrape_timestamp'
             ]]
-            
+
+            self.logger.info(f"Successfully fetched {len(df)} reviews")
             return df
 
         except Exception as e:
