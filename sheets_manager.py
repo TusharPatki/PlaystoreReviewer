@@ -20,17 +20,29 @@ class SheetsManager:
             if not creds_json:
                 raise ValueError("Google Sheets credentials not found in environment")
 
-            # Parse credentials JSON
-            creds_dict = json.loads(creds_json)
+            try:
+                # Parse credentials JSON with strict parsing
+                creds_dict = json.loads(creds_json.strip(), strict=True)
 
-            # Create credentials object
-            creds = Credentials.from_service_account_info(
-                creds_dict,
-                scopes=['https://www.googleapis.com/auth/spreadsheets']
-            )
+                # Validate required fields
+                required_fields = ['client_email', 'private_key', 'project_id']
+                missing_fields = [field for field in required_fields if field not in creds_dict]
+                if missing_fields:
+                    raise ValueError(f"Missing required fields in credentials: {', '.join(missing_fields)}")
 
-            service = build('sheets', 'v4', credentials=creds)
-            return service
+                # Create credentials object
+                creds = Credentials.from_service_account_info(
+                    creds_dict,
+                    scopes=['https://www.googleapis.com/auth/spreadsheets']
+                )
+
+                service = build('sheets', 'v4', credentials=creds)
+                return service
+
+            except json.JSONDecodeError as je:
+                self.logger.error(f"Invalid JSON format in credentials: {str(je)}")
+                raise ValueError("Invalid JSON format in Google Sheets credentials. Please check the format.")
+
         except Exception as e:
             self.logger.error(f"Error initializing Sheets service: {str(e)}")
             raise
