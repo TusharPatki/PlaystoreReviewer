@@ -32,9 +32,9 @@ class PlayStoreReviewer:
             # Add timestamp
             df['scrape_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-            # Select and rename columns
+            # Select and rename columns, including userName
             df = df[[
-                'reviewId', 'content', 'score', 'thumbsUpCount',
+                'reviewId', 'userName', 'content', 'score', 'thumbsUpCount',
                 'reviewCreatedVersion', 'at', 'repliedAt',
                 'scrape_timestamp'
             ]]

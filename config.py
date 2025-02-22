@@ -1,5 +1,5 @@
 # Configuration settings
-PACKAGE_NAME = "com.whatsapp"  # WhatsApp as an example to test review fetching
+PACKAGE_NAME = "com.yaper.android"  # Yaper app package name
 SPREADSHEET_ID = None  # Will be set from environment variable for security
 SCHEDULE_TIME = "00:00"  # Daily execution time (midnight)
 
